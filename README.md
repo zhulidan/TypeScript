@@ -1,1 +1,1 @@
-这是一个有关TypeScript的
+这是一个有关TypeScript的基础教程
