@@ -15,6 +15,9 @@
     - [2.2.2 未声明类型的变量](#222-未声明类型的变量)
   - [2.3. 类型推论](#23-类型推论)
     - [2.3.1 什么是类型推论](#231-什么是类型推论)
+  - [2.4. 联合类型](#24-联合类型)
+    - [2.4.1 简单的例子](#241-简单的例子)
+    - [2.4.2 访问联合类型的属性或方法](#242-访问联合类型的属性或方法)
   
 
 # 1. 简介
@@ -81,7 +84,7 @@ console.log(sayHello(user));
 
 在 TypeScript 中，我们使用 `:` 指定变量的类型，`:` 的前后有没有空格都可以的
 
-上述例子中，我们用 `:` 指定 `person` 参数类型为 `string` 。但是编译为 `js` 之后，并没有什么检查的代码被查入进来
+上述例子中，我们用 `:` 指定 `person` 参数类型为 `string` 。但是编译为 `js` 之后，并没有什么检查的代码被插入进来
 
 这是因为 **`TypeScript` 只会在编译时对类型进行静态检查，如果发现有错误，编译的时候就会报错。** 而在运行时，与普通的 `JavaScript` 文件一样，不会对类型进行检查。
 
@@ -367,10 +370,69 @@ myFavoriteNumber = 7;
 
 - TypeScript 会在没有明确的指定类型的时候推测出一个类型，这就是 **类型推论**。
   
-- 如果定义的时候没有赋值，不管之后有没有赋值，都会被推断成 any 类型而完全不被类型检查：
+- **如果定义的时候没有赋值，不管之后有没有赋值，都会被推断成 `any` 类型而完全不被类型检查**：
 
 ```javscript
 let myFavoriteNumber;
 myFavoriteNumber = 'seven';
 myFavoriteNumber = 7;
 ```
+
+## 2.4. 联合类型
+
+- 联合类型（Union Types）表示取值可以为多种类型中的一种。
+
+### 2.4.1 简单的例子
+
+```javscript
+let myFavoriteNumber: string | number;
+myFavoriteNumber = 'seven';
+myFavoriteNumber = 7;
+```
+
+```javscript
+let myFavoriteNumber: string | number;
+myFavoriteNumber = true;
+// index.ts(2,1): error TS2322: Type 'boolean' is not assignable to type 'string | number'.
+//   Type 'boolean' is not assignable to type 'number'.
+```
+
+- 联合类型使用 `|` 分隔每个类型。
+
+- 这里的 `let myFavoriteNumber: string | number` 的含义是，允许 `myFavoriteNumber` 的类型是 `string` 或者 `number`，但是不能是其它类型。
+
+### 2.4.2 访问联合类型的属性或方法
+
+- 当 TypeScript 不确定一个联合类型的变量到底是哪个类型的时候，我们 **只能访问此联合类型的所有类型里共有的属性或方法**：
+
+```javscript
+function getLength(something: string | number): number {
+    return something.length;
+}
+// index.ts(2,22): error TS2339: Property 'length' does not exist on type 'string | number'.
+//   Property 'length' does not exist on type 'number'.
+```
+
+- 上例中，`length` 不是 `string` 和 `number` 的共有属性，所以会报错。
+  
+- 访问 `string` 和 `number` 的共有属性是没问题的：
+
+```javscript
+function getString(something: string | number): string{
+    return something.toString();
+}
+```
+
+- 联合类型的变量在被赋值的时候，会根据类型推论的规则推断出一个类型：
+
+```javscript
+let myFavoriteNumber: string | number;
+myFavoriteNumber = 'seven';
+console.log(myFavoriteNumber.length); //5
+myFavoriteNumber = 7;
+console.log(myFavoriteNumber.length);//编译时报错
+// index.ts(5,30): error TS2339: Property 'length' does not exist on type 'number'.
+```
+
+- 上例中，第二行的 `myFavoriteNumber` 被推断成了 `string`，访问它的 `length` 属性不会报错。而第四行的 `myFavoriteNumber` 被推断成了 `number`，访问它的 `length` 属性就报错了
+
