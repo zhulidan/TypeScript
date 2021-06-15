@@ -1,0 +1,278 @@
+1.简介
+1.1 什么是 TypeScript ？
+1）TypeScript 是添加了类型系统的 JavaScript，适用于任何规模的项目
+2）TypeScript 是一门静态类型、弱类型的语言
+3）TypeScript 是完全兼容 JavaScript 的，它不会修改  JavaScript 运行时的特性。
+4）TypeScript 可以编译为 JavaScript，然后运行在浏览器、Node.js 等任何能运行 JavaScript 的环境中。
+5）TypeScript 拥有很多编译选项，类型检查的严格程度有你决定
+6）TypeScript 可以和JavaScript共存，这意味着JavaScript项目能够渐进式得迁移到TypeScript
+7）TypeScript 增强了编辑器（IDE）的功能，提供了代码补全、接口提示、跳转到定义、代码重构等能力
+8）TypeScript 拥有活跃的社区，大多数常用的第三方库都提供了类型声明
+9）TypeScript 与标准同步发展，符合最新的 ECMAScript 标准（stage3）
+
+1.2 安装 TypeScript
+
+1）TypeScript 的命令工具安装方法如下：
+
+npm install -g typescript
+
+2）以上命令会在全局环境下安装 tsc 命令，安装完成之后，我们就可以在任何地方执行tsc命令了
+3）编译一个 TypeScript 文件很简单
+tsc hello.ts
+
+4）我们约定使用 Typescript 编写的文件以 .ts 为后缀，用TypeScript编写React时，以 .tsx 为后缀
+
+1.3 Hello TypeScript
+
+1）我们从一个简单的例子开始。将以下代码复制到hello.ts中：
+
+function sayHello(person:string){
+  return 'Hello,'+person;
+}
+let user = "Tom";
+console.log(sayHello(user));
+
+2) 然后执行  tsc hello.ts
+3) 这时会产生一个编译好的 hello.js
+function sayHello(person){
+  return 'Hello,'+person;
+}
+let user = "Tom";
+console.log(sayHello(user));
+4) 在TypeScript 中，我们使用":"指定变量的类型，":"的前后有没有空格都可以的
+5）上述例子中，我们用":"指定person参数类型为string。但是编译为js之后，并没有什么检查的代码被查入进来
+6）这是因为TypeScript只会在编译时对类型进行静态检查，如果发现有错误，编译的时候就会报错。而在运行时，与普通的javaScript文件一样，不会对类型进行检查
+7）如果我们需要保证运行时的参数类型，还是得手动对类型进行判断：
+function sayHello(person:string){
+  if(typeof person === "string"){
+    return 'Hello, '+ person
+  }else{
+    throw new Error('person is not a string')
+  }
+}
+let user = 'Tom';
+console.log(sayHello(user))
+
+8)let时ES6中得关键字，和var类似，用于定义一个局部变量，可以参阅let和const命令
+9）下尝试把这段代码编译一下：
+function sayHello(person:string){
+  return 'Hello, '+person
+}
+let user = [0,1,2];
+console.log(sayHello(user));
+  
+  a. 编辑器中会提示错误，编译的时候也会报错
+  hello.ts:6:22 - error TS2345: Argument of type 'number[]' is not assignable to parameter of type 'string'.
+  b. 但是还是生成了js文件
+  function sayHello(person) {
+    return 'Hello, ' + person;
+  }
+  var user = [0, 1, 2];
+  console.log(sayHello(user));
+10）这是因为TypeScript编译的时候即使报错了，还是会生成编译结果，我们仍然可以使用这个编译之后的文件
+11）如果要在报错的时候终止js文件的生成，可以在tsconfig.json中配置noEmitError即可
+
+2. 基础
+
+2.1 原始数据类型
+
+1）JavaScript的类型分为两种：原始数据类型（Primitive data types）和对象类型（Object types）
+2）原始数据类型包括：布尔值、数值、字符串、null、undefined以及ES6中的新类型symbol和ES10中的心类型BigInt
+3）本节主要介绍前五种原始数据类型在TypeScript中的使用
+
+2.1.1 布尔值
+
+1）布尔值时最基础的数据类型，在TypeScript中，使用boolean定义布尔值类型
+let isDone: boolean = false;
+//编译通过
+//后面约定 ，未强调编译错误的代码片段，默认值编译成功
+
+2）注意：使用构造函数 Boolean 创造的对象不是布尔值
+let createdByBoolean: boolean = new Boolean(1);
+// Type 'Boolean' is not assignable to type 'boolean'.
+//   'boolean' is a primitive, but 'Boolean' is a wrapper object. Prefer using 'boolean' when possible.
+
+3）事实上 new Boolean() 返回的是一个 Boolean 对象
+let createdByNewBoolean: Boolean = new Boolean(1);
+
+4）直接调用 Boolean 也可以返回一个boolean类型
+let createdByBoolean: boolean = Boolean(1)
+
+5）在TypeScript中，boolean是JavaScript中的基本类型，而Boolean是JavaScript中的构造函数。其他基本类型（除了null和undefined）一样，不在赘述
+
+2.1.2 数值
+
+1）使用 number 定义数值类型：
+let decLiteral: number = 6;
+let hexLiteral: number = 0xf00d;
+//ES6中的二进制表示法
+let binaryLiteral: number = 0b1010;
+//ES6中的八进制表示法
+let octalLiteral: number = 0o744;
+let notANumber: number = NaN;
+let infinityNumber: number = Infinity; //无穷数
+2）编译结果：
+var decLiteral = 6;
+var hexLiteral = 0xf00d;
+// ES6 中的二进制表示法
+var binaryLiteral = 10;
+// ES6 中的八进制表示法
+var octalLiteral = 484;
+var notANumber = NaN;
+var infinityNumber = Infinity;
+3）其中0b1010和0o744是ES6中的二进制和八进制表示法，它们会被编译为十进制数字
+
+2.1.3 字符串
+
+1）使用string定义字符串类型：
+let myName: string = 'Tom';
+let myAge: number = 25;
+
+//模板字符串
+let sentence:string = `Hello, my name is ${myName}. I'll be ${myAge+1} years old next month`
+
+2）编译结果：
+var myName = 'Tom';
+var myAge = 25;
+// 模板字符串
+var sentence = "Hello, my name is " + myName + ".
+I'll be " + (myAge + 1) + " years old next month.";
+
+2.1.4 空值 void
+
+1）JavaScript没有空值（void）的概念，在TypeScript中，可以用void表示没有任何返回值的函数：
+function alertName():void{
+  alert('My name is Tom')
+}
+2）声明一个void类型的变量没有什么用，因为你只能将它赋值为undefined和null（只在--strictNullChecks未指定时）：
+let unusable: void = undefined;
+
+2.1.5 Null和Undefined
+
+1）在TypeScript中，可以使用null和undefined来定义这两个原始数据类型：
+let u: undefined = undefined;
+let n: null = null;
+
+2）与void的区别是，undefined和null是所有类型的子类型。也就是说undefined类型的变量，可以赋值给number类型的变量：
+let num: number = undefined;//这样不会报错
+
+//这样也不会报错
+let u: undefined;
+let num: number = u;
+
+3）而void类型的变量不能赋值给number类型的变量：
+let u: void;
+let num: number = u;
+
+// Type 'void' is not assignable to type 'number'.
+
+2.2 任意值
+
+任意值（any）用来表示允许赋值为任意类型
+
+2.2.1 什么是任意值类型
+
+1）如果是一个普通类型，在赋值过程中改变类型是不被允许的：
+let myFavoriteNumber: string = 'seven'；
+myFavoriteNumber = 7；
+// index.ts(2,1): error TS2322: Type 'number' is not assignable to type 'string'.
+
+2）但如果是any类型，则允许被赋值为任意类型
+let myFavoriteNumber: any = 'seven';
+myFavoriteNumber = 7;
+
+2.2.2 任意值的属性和方法
+
+1）在任意值上访问任何属性都是允许的：
+let anyThing: any = 'hello';
+console.log(anyThing.myName);
+console.log(anyThing.firstName);
+
+2）也允许调用任何方法：
+let anyThing: any = 'Tom';
+anyThing.setName('Jerry');
+anyThing.setName('Jerry').sayHello();
+anyThing.myName.serFirstName('Cat')
+
+3）跨域认为，声明一个变量为任意值之后，对它的任何操作，返回的内容的类型都是任意值
+
+2.2.3 未声明类型的变量
+
+1）变量如果在声明的时候，未指定其类型，那么它会被识别为任意值类型
+let something;
+something = 'seven';
+something = 7;
+something.setName("Tom");
+
+等价于
+
+let something: any;
+something = 'seven';
+something = 7;
+
+something.setName('Tom');
+
+2.3 类型推论
+
+如果没有明确的指定类型，那么TypeScript会依照类型推论（Type Inference）的规则推断出一个类型
+
+2.3.1 什么是类型推论
+
+1）以下代码虽然没有指定类型，但是会在编译的时候报错：
+let myFavoriteNumber = 'seven';
+myFavoriteNumber = 7;
+// index.ts(2,1): error TS2322: Type 'number' is not assignable to type 'string'.
+
+2）事实上，它等价于：
+let myFavoriteNumber: string = 'seven';
+myFavoriteNumber = 7;
+
+// index.ts(2,1): error TS2322: Type 'number' is not assignable to type 'string'.
+
+3）TypeScript会在没有明确的指定类型的时候推测出一个类型，这就是类型推论
+4）如果定义的时候没有赋值，不管之后有没有赋值，都会被推断成any类型而完全不被类型检查
+let myFavoriteNumber;
+myFavoriteNumber = 'seven';
+myFavoriteNumber = 7;
+
+2.4 联合类型
+
+联合类型（Union Types）表示取值可以为多种类型种的一种
+
+2.4.1 简单的例子
+
+1) 例1： let myFavoriteNumber: string | number;
+myFavoriteNumber = 'seven';
+myFavoriteNumber = 7;
+
+例2：
+let myFavoriteNumber: string | number;
+myFavoriteNumber = true;
+// index.ts(2,1): error TS2322: Type 'boolean' is not assignable to type 'string | number'.
+//   Type 'boolean' is not assignable to type 'number'.
+
+2）联合类型使用|分隔每个类型
+3）这里的let myFavoriteNumber: string | number的含义是，允许myFavoriteNumber的类型是string或者number，但是不能是其它类型
+
+2.4.2 访问联合类型的属性或方法
+
+1）当TypeScript不确定是一个联合类型的变量到底是哪个类型的时候，我们只能访问此联合类型的所有类型例共有的属性或方法
+function getLength(something: string | number):number{
+  return something.length
+}
+// index.ts(2,22): error TS2339: Property 'length' does not exist on type 'string | number'.
+//   Property 'length' does not exist on type 'number'.
+
+2）上例中，length不是string和number的共有属性，所以会报错
+3）访问string和number的共有属性是没问题的：
+function getString(something: string | number): string{
+    return something.toString();
+}
+4）联合类型的变量在被赋值的时候，会根据类型推论的规则推断出一个类型：
+let myFavoriteNumber: string | number;
+myFavoriteNumber = 'seven';
+console.log(myFavoriteNumber.length); //5
+myFavoriteNumber = 7;
+console.log(myFavoriteNumber.length);//编译时报错
+// index.ts(5,30): error TS2339: Property 'length' does not exist on type 'number'.
+5）上例中，第二行的myFavoriteNumber被推断成了string，访问它的length属性不会报错。而第四行的myFavoriteNumber被推断成了number，访问它的length属性就报错了
