@@ -38,6 +38,9 @@
     - [2.6.3 用接口表示数组](#263-用接口表示数组)
     - [2.6.4 类数组](#264-类数组)
     - [2.6.5 any 在数组中的应用](#265-any-在数组中的应用)
+  - [2.7. 函数的类型](#27-函数的类型)
+    - [2.7.1 函数的声明](#271-函数的声明)
+    - [2.7.2 函数表达式](#272-函数表达式)
   
 
 # 1. 简介
@@ -925,3 +928,75 @@ interface IArguments {
 ```javascript
 let list: any[] = ['xcatliu', 25, {website: 'http://xcatliu.com'}]
 ```
+
+## 2.7. 函数的类型
+
+> 函数是 JavaScript 中的一等公民
+
+### 2.7.1 函数的声明
+
+- 在 JavaScript 中，有两种常见的定义函数的方式——函数声明（Function Declaration）和函数表达式（Function Expression）
+
+```javascript
+//函数声明（Function Declaration）
+function sum(x, y) {
+  return x + y;
+}
+
+//函数表达式（Function Expression）
+let mySum = function (x, y) {
+  return x + y;
+}
+```
+
+- 一个函数有输入和输出，要在 TypeScript 中对其进行约束，需要把输入和输出都考虑到，其中函数声明的类型定义较简单：
+
+```javascript
+function sum(x: number, y: number): number{
+  return x + y;
+}
+```
+  
+- 注意，输入多余的（或者少于要求的）参数，是不被允许的：
+
+```javascript
+function sum(x: number, y: number): number {
+  return x + y;
+}
+
+sum(1, 2, 3)
+// index.ts(4,1): error TS2346: Supplied parameters do not match any signature of call target.
+```
+
+```javascript
+function sum(x: number, y: number): number {
+  return x + y;
+}
+sum(1)
+// index.ts(4,1): error TS2346: Supplied parameters do not match any signature of call target.
+```
+
+### 2.7.2 函数表达式
+
+- 如果要我们现在写一个对函数表达式（Function Expression）的定义，可能会写成这样：
+
+```javascript
+let mySum = function (x: number, y: number): number {
+  return x + y;
+}
+```
+
+- 这是可以通过编译的，不过事实上，上面的代码只对等号右侧的匿名函数进行了类型定义，而等号左边的 `mySum`，是通过赋值操作进行类型推论而推断出来的。如果需要我们手动给 `mySum` 添加类型，则应该是这样：
+
+```javascript  
+let mySum: (x: number, y: number) => number = function (x: number, y: number): number {
+  return x + y;
+}
+```
+
+- 注意不要混淆了 TypeScript 中的 `=>` 和 ES6 中的 `=>`
+
+- 在 TypeScript 的类型定义中，`=>` 用来表示函数的定义，左边是输入类型，需要用括号括起来，右边是输出类型
+
+- 在 ES6 中，`=>` 叫做箭头函数，应用十分广泛，可以参考 ES6 中的箭头函数
+
