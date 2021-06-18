@@ -451,3 +451,134 @@ tom.id = 89757;
 
 4）上例中，报错信息有两处，第一处是在对 tom 进行赋值的时候，没有给 id 赋值
 5）第二处是在给 tom.id 赋值的时候，由于它是只读属性，所以报错了
+
+2.6 数组的类型
+
+在 TypeScript 中，数组类型有多种定义方式，比较灵活
+
+2.6.1 [类型 + 方括号] 表示法
+
+1）最简单的方法是使用 [类型 + 方括号] 来表示数组：
+let fibonacci: number[] = [1, 1, 2, 3, 5];
+
+2）数组的项中不允许出现其它的类型
+let fibonacci: number[] = [1, '1', 2, 3, 5];
+// Type 'string' is not assignable to type 'number'.
+
+3）数组的一些方法的参数也会根据数组在定义时约定的类型进行限制：
+let fibonacci: number[] = [1, 1, 2, 3, 5];
+fibonacci.push('8');
+// Argument of type '"8"' is not assignable to parameter of type 'number'.
+
+4）上例中，push方法只允许传入number类型的参数，但是却传了一个'8'类型的参数，所以报错了。这里'8'是一个字符串字面量类型，会在后续章节中详细介绍
+
+2.6.2 数组泛型
+
+1）我们也可以使用数组泛型（Array Generic）Array<elemType>来表示数组：
+let fibonacci: Array<number> = [1, 1, 2, 3, 5];
+
+2）关于泛型，可以参考泛型一章
+
+2.6.3 用接口表示数组
+
+1）接口也可以用来描述数组：
+interface NumberArray{
+  [index: number]: number
+}
+let fibonacci: NumberArray = [1, 1, 2, 3, 5];
+
+2）NumberArray表示：只要索引的类型是数字时，那么值得类型必须时数字
+
+3）虽然接口也可以用来描述数组，但是我们一般不会这么做，因为这种方式比前两种方式复杂多了
+
+4）不过有一种情况例外，那就时它常用来表示类数组。
+
+2.6.4 类数组
+
+1）类数组（Array-like Object）不是数组类型，比如 arguments
+function sum(){
+  let args: number[] = arguments
+}
+// Type 'IArguments' is missing the following properties from type 'number[]': pop, push, concat, join, and 24 more.
+
+2）上例中，arguments实际上是一个类数组，不能用普通的数组的方式来描述，而应该用接口：
+function sum(){
+  let args:{
+    [index: number]: number;
+    length: number;
+    callee: Function;
+  } = arguments
+}
+
+3）在这个例子中，我们除了约束当前索引的类型是数字时，值的类型必须是数字之外，也约束了它还有length和callee两个属性
+4）事实上常用的类数组都有自己的接口定义，如IArguments, NodeList, HTMLCollection等：
+function sum(){
+  let args: IArguments = arguments
+}
+
+5）其中 IArguments 是 TypeScript 中定义好了的类型，它实际上就是：
+interface IArguments {
+  [index: number]: any;
+  length: number;
+  callee: Function;
+}
+
+6）关于内置对象，可以参考内置对象一章
+
+2.6.5 any在数组中的应用
+
+1）一个比较常见的作法是，用 any 表示数组中允许出现任意类型：
+let list: any[] = ['xcatliu', 25, {website:'http://xcatliu.com'}]
+
+2.7 函数的类型
+
+函数是 JavaScript 中的一等公民
+
+2.7.1 函数的声明
+
+1）在 JavaScript 中，有两种常见的定义函数的方式——函数声明（Function Declaration）和函数表达式（Function Expression）
+//函数声明
+function sum(x, y){
+  return x + y;
+}
+
+//函数表达式
+let mySum = function(x, y){
+  return x + y;
+}
+
+2）一个函数有输入和输出，要在 TypeScript 中对其进行约束，需要把输入和输出都考虑到，其中函数声明的类型定义较简单：
+function sum(x: number, y: number): number{
+  return x + y;
+}
+
+3）注意，输入多余的（或者少于要求的）参数，是不被允许的
+
+例1：
+function sum(x: number, y: number): number{
+  return x + y;
+}
+sum(1, 2, 3);
+// index.ts(4,1): error TS2346: Supplied parameters do not match any signature of call target.
+
+例2：
+function sum(x:number, y: number): number{
+  return x + y;
+}
+sum(1)
+// index.ts(4,1): error TS2346: Supplied parameters do not match any signature of call target.
+
+2.7.2 函数表达式
+
+1）如果要我们现在写一个对函数表达式（Function Expression）的定义，可能会携程这样：
+let mySum = function(x: number, y: number):number{
+  return x + y;
+}
+2）这是可以通过编译的，不过事实上，上面的代码只对等号右侧的匿名函数进行了类型定义，而等号左侧的 mySum ，是通过赋值操作进行类型推论出来的。如果需要我们手动给 mySum 添加类型，则应该是这样：
+let mySum: (x: number, y: number) => number = function(x: number, y: number): number{
+  return x + y;
+}
+
+3）主要不要混淆了 TypeScript 中的 => 和 ES6 中的 =>
+4）在 TypeScript 的类型定义中，=> 用来表示函数的定义，左边是输入类型，需要用括号括起来，右边是输出类型
+5）在 ES6 中，=> 叫做箭头函数，应用十分广泛，可以参考 ES6 中的箭头函数

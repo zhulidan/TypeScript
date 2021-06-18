@@ -134,11 +134,11 @@ print(str(1) + '1')
 
 > 虽然 TypeScript 不限制加号两侧的类型，但是我们可以借助 TypeScript 提供的类型系统，以及 ESLint 提供的代码检查功能，来限制加号两侧必须同为数字或同为字符串。这在一定程度上使得 TypeScript 向「强类型」更近一步了——当然，这种限制是可选的。
 
-- 这样的类型系统体现了 TypeScript 的核心设计理念：在完整保留 JavaScript 运行时行为的基础上，通过引入静态累型系统来提高代码的可维护性，减少可能出现的 bug
+- 这样的类型系统体现了 TypeScript 的核心设计理念：在完整保留 JavaScript 运行时行为的基础上，通过引入静态类型系统来提高代码的可维护性，减少可能出现的 bug
 
 #### 适用于任何规模
 
-- TypeScript 非常适用于大型项目——这是显而易见得，类型系统可以为大型项目带来更高的可维护性，以及更少的bug
+- TypeScript 非常适用于大型项目——这是显而易见的，类型系统可以为大型项目带来更高的可维护性，以及更少的bug
 
 - 在中小型项目中推行 TypeScript 的最大障碍就是认为使用 TypeScript 需要写额外的代码，降低开发效率。但事实上，由于有[类型推论]，大部分类型都不需要手动声明了。相反，TypeScript 增强了编辑器（IDE）的功能，包括代码补全、接口提示、跳转到定义、代码重构等，这在很大程度上提高了开发效率。而且 TypeScript 有近百个[编译选项]，如果你认为类型检查过于严格，那么可以通过修改编译选项来降低类型检查的标准。
 
@@ -174,7 +174,7 @@ print(str(1) + '1')
 
 - 一个语法进入到 Stage 3 阶段后，TypeScript 就会实现它。一方面，让我们可以尽早的使用到最新的语法，帮助它进入到下一个阶段；另一方面，处于 Stage 3 阶段的语法已经比较稳定了，基本不会有语法的变更，这使得我们能够放心的使用它。
 
-- 除了实现 ECMAScript 标准之外，TypeScript 团队也推进了诸多语法提案，比如可选链操作符（`?.`）[11]、空值合并操作符（`??`）、Throw 表达式、正则匹配索引等。
+- 除了实现 ECMAScript 标准之外，TypeScript 团队也推进了诸多语法提案，比如可选链操作符（`?.`）、空值合并操作符（`??`）、Throw 表达式、正则匹配索引等。
   
 ### 1.1.2  总结
 
@@ -324,7 +324,8 @@ let isDone: boolean = false;
 - 注意：使用构造函数 `Boolean` 创造的对象 **不是** 布尔值
 
 ```javscript
-let createdByNewBoolean: boolean = new Boolean(1)
+let createdByNewBoolean: boolean = new Boolean(1);
+
 // Type 'Boolean' is not assignable to type 'boolean'.
 //   'boolean' is a primitive, but 'Boolean' is a wrapper object. Prefer using 'boolean' when possible.
 ```
@@ -899,7 +900,7 @@ function sum(){
 }
 ```
 
-- 在这个例子中，我们除了约束当索引的类型是数字时，值的类型必须是数字之外，也约束了它还有 `length` 和 `callee` 两个属性。
+- 在这个例子中，我们除了约束当前索引的类型是数字时，值的类型必须是数字之外，也约束了它还有 `length` 和 `callee` 两个属性。
 
 - 事实上常用的类数组都有自己的接口定义，如 IArguments, NodeList, HTMLCollection 等：
 
