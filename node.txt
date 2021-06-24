@@ -582,3 +582,16 @@ let mySum: (x: number, y: number) => number = function(x: number, y: number): nu
 3）主要不要混淆了 TypeScript 中的 => 和 ES6 中的 =>
 4）在 TypeScript 的类型定义中，=> 用来表示函数的定义，左边是输入类型，需要用括号括起来，右边是输出类型
 5）在 ES6 中，=> 叫做箭头函数，应用十分广泛，可以参考 ES6 中的箭头函数
+
+2.7.3 用接口定义函数的的形状
+
+1）我们也可以使用接口的方式来定义一个函数需要符合的形状：
+interface SearchFunc{
+  (source: string, subString: string): boolean;
+}
+let mySearch: SearchFunc;
+mySearch = function(source: string, subString: string){
+  return source.search(subString) !== -1;
+}
+
+2）采用函数表达式|接口定义函数的方式时，对等号左侧进行类型限制，可以保证以后对函数名赋值时保证参数个数、参数类型、返回值类型不变
