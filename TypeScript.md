@@ -225,7 +225,7 @@ print(str(1) + '1')
 ## 1.3. Hello TypeScript
 
 - 我们从一个简单的例子开始。
-将以前代码赋值到 `hello.ts` 中
+将以前代码复制到 `hello.ts` 中
   
 ```javascript
 function sayHello(person: string) {
