@@ -49,7 +49,8 @@
   - [2.8. 类型断言](#28-类型断言)
     - [2.8.1 语法](#281-语法)
     - [2.8.2 类型断言的用途](#282-类型断言的用途)
-      - [2.8.2.1 将一共联合类型断言为其中一个类型](#2821-将一共联合类型断言为其中一个类型)
+      - [2.8.2.1 将一个联合类型断言为其中一个类型](#2821-将一个联合类型断言为其中一个类型)
+      - [2.8.2.2 将一个父类型断言为更加具体的子类](#2822-将一个父类型断言为更加具体的子类)
   
 
 # 1. 简介
@@ -1179,7 +1180,7 @@ function reverse(x: number | string): number | string | void{
 
 类型断言的常见用途有几下几种：
 
-#### 2.8.2.1 将一共联合类型断言为其中一个类型
+#### 2.8.2.1 将一个联合类型断言为其中一个类型
 
 - 之前提到过，当 TypeScript 不确定一个联合类型的变量到底是哪个类型的时候，我们 **只能访问此联合类型的所有类型中共有的属性或方法**：
 
@@ -1247,7 +1248,7 @@ function isFish(animal: Cat | Fish){
 
 - 这样就可以解决访问 `animal.swim` 时报错的问题了。
 
-- 需要注意的是，类型断言只能够 「欺骗」TypeScript 编译器，无法避免运行时的错误，反而滥用类型断言可能会导致运行时的错误：
+- 需要注意的是，类型断言只能够「欺骗」TypeScript 编译器，无法避免运行时的错误，反而滥用类型断言可能会导致运行时的错误：
 
 ```javascript
 interface Cat {
@@ -1274,3 +1275,62 @@ const tom: Cat = {
 swim(tom);
 // Uncaught TypeError: animal.swim is not a function`
 ```
+
+- 上面的例子编译时不会报错，但在运行时会报错：
+  
+```javascript
+Uncaught TypeError: animal.swim is not a function`
+```
+
+- 原因是 `(animal as Fish).swim()` 这段代码隐藏了 `animal` 可能为 `Cat` 的情况，将 `animal` 直接断言为 `Fish` 了，而 TypeScript 编辑器信任了我们的断言，故在调用 `swim()` 时没有编译错误
+
+- 可是 swim 函数接受的参数是 Cat | Fish，一旦传入的参数是 Cat 类型的变量，由于 Cat 上没有 swim 方法，就会导致运行时错误了。
+
+- 总之，使用类型断言时一定要格外小心，尽量避免断言后调用方法或引用深层属性，以减少不必要的运行时错误
+
+#### 2.8.2.2 将一个父类型断言为更加具体的子类
+
+- 当类之间有继承关系时，类型断言也是很常见的：
+
+```javascript
+class ApiError extends Error { //子类 ApiError 继承父类 Error
+  code: number = 0;
+}
+
+class HttpError extends Error {
+  statusCode: number = 200
+}
+
+function isApiError(error: Error){
+  if(typeof (error as ApiError).code === 'number'){
+    return true
+  }
+  return false;
+}
+
+```
+
+- 上面的例子中，我们声明了函数 isApiError，它用来判断传入的参数是不是 ApiError 类型，为了实现这样一个函数，它的参数的类型肯定得是比较抽象的父类 Error，这样的话这个函数就能接受 Error 或它的子类作为参数了。
+
+- 但是由于父类 Error 中没有 Code 属性，故直接获取 error.code 会报错，需要使用类型断言获取  (error as ApiError).code
+
+- 大家可能会注意到，在这个例子中有一个更合适的方式来判断是不是 ApiError，那就是使用 `instanceof`
+
+```javascript
+class ApiError extends Error {
+  code: number = 0;
+}
+class HttpError extends Error {
+  statusCode: number = 200
+}
+function isApiError(error: Error){
+  if(error instanceof ApiError){
+    return true;
+  }
+  return false;
+}
+```
+
+- 上面的例子中，确实使用 `instanceof` 更加合适，因为 `ApiError` 是一个 JavaScript 的类，能够通过 `instanceof` 来判断 `error` 是否是它的实例。
+
+- 但是有的情况下 `ApiError` 和 `HttpError` 不是一个真正的类，而只是一个TypeScript 的接口（`interface`），接口是一个类型，不是一个真正的值，它在编译结果中会被删除，当然就无法使用 `instanceof` 来做运行时判断了：
