@@ -85,3 +85,58 @@ function isApiError1(error: Error){
     }
     return false
 }
+
+//2.2 当ApiErrorh和 HttpError 不是一个真正的类，而只是一个TypeScript的接口，接口是一个类型，不是一个真正的值，它在编译结果中会被删除，当然就无法使用 instanceof 来做运行时判断了
+// interface ApiError2 extends Error{
+//     code: number
+// }
+// interface HttpError2 extends Error{
+//     statusCode: number
+// }
+// function isApiError2(error: Error){
+//     if(error instanceof ApiError2){
+//         return true
+//     }
+//     return false
+// }
+
+//2.3 如果为接口，就只能用类型断言
+
+interface ApiError3 extends Error {
+    code: number;
+}
+interface HttpError3 extends Error{
+    statusCode: number;
+}
+function isApiError3(error: Error){
+    if(typeof (error as ApiError3).code === 'number'){
+        return true
+    }
+    return false
+}
+
+//2.3 当引用一个在此类型上不存在的属性或方法时，就会报错
+// const foo1: number = 1;
+// foo1.length = 1;
+
+// 有时候非常确定这段代码不会出错
+// window.foo1 = 1
+
+//  可以使用 as any 临时将window 断言为any类型
+(window as any).foo1 = 1
+
+//2.4 将any断言为一个具体的类型
+// 返回值为any
+function getCacheData(key: string): any {
+    return (window as any).cache[key]
+}
+//在使用它时，最好能够将调用了它之后的返回值断言成一个精确的类型，这样就方便了后续的操作：
+function getCacheData1(key: string): any {
+    return (window as any).cache[key];
+}
+interface Cat4 {
+    name: string;
+    run(): void
+}
+const tom = getCacheData1('tom') as Cat;
+tom.run()
