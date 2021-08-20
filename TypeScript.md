@@ -1573,7 +1573,7 @@ function testCat(cat: Cat) {
 
 ### 2.8.5 类型断言 vs 类型转换
 
-- 类型断言指挥影响 TypeScript 编译时的类型，类型断言语句在编译结果中会被删除：
+- 类型断言只会影响 TypeScript 编译时的类型，类型断言语句在编译结果中会被删除：
 
 ```javascript
 function toBoolean(something: any): boolean{
@@ -1730,7 +1730,7 @@ tom.run();
 - 我们还有第三种方式可以解决这个问题，那就是泛型：
 
 ```javascript
-function getCache<T>(key: string): T {
+function getCacheData<T>(key: string): T {
   return (window as any).cache[key];
 }
 interface Cat {
