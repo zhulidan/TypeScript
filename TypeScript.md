@@ -58,6 +58,12 @@
     - [2.8.5 类型断言 vs 类型转换](#285-类型断言-vs-类型转换)
     - [2.8.6 类型断言 vs 类型声明](#286-类型断言-vs-类型声明)
     - [2.8.7 类型断言 vs 泛型](#287-类型断言-vs-泛型)
+  - [2.9. 声明文件](#29-声明文件)
+    - [2.9.1 新语法索引](#291-新语法索引)
+    - [2.9.2 什么是声明语句](#292-什么是声明语句)
+    - [2.9.3 什么是声明文件](#293-什么是声明文件)
+      - [2.9.3.1 第三方声明文件](#2931-第三方声明文件)
+    - [2.9.4 书写声明文件](#294-书写声明文件)
   
 
 # 1. 简介
@@ -1743,4 +1749,126 @@ tom.run();
 
 - 通过给 `getCacheData` 函数添加了一个泛型 `<T>`，我们可以更加规范的实现对 `getCacheData` 返回值的约束，这也同时去除掉了代码中的 `any`，是最优的一个解决方案
 
+## 2.9. 声明文件
 
+当使用第三方库时，我们需要引用它的声明文件，才能获得对应的代码补全、接口提示等功能。
+
+### 2.9.1 新语法索引
+
+由于本章涉及大量新语法，故在本章开头列出新语法的索引，方便大家在使用这些新语法时能快捷查找到对应的讲解：
+
+- declare var 声明全局变量
+- declare function 声明全局方法
+- declare class 声明全局类
+- declare enum 声明全局枚举类型
+- declare namespace 声明（含有子属性的）全局对象
+- interface 和 type 声明全局类型
+- export 导出变量
+- export namespace 导出（含有子属性的）对象
+- export default ES6 默认导出
+- export = commonjs 导出模块
+- export as namespace UMD 库声明全局变量
+- declare global 扩展全局变量
+- declare module 扩展模块
+- /// <reference /> 三斜线指令
+
+### 2.9.2 什么是声明语句
+
+- 假如我们想使用第三方库 jQuery，一种常见的方式是在 html 中通过 `<script>` 标签引入 jQuery，然后就可以使用全局变量 `$` 或 `jQuery` 了
+
+- 我们通常这样获取一个 `id` 是 `foo` 的元素：
+
+```javascript
+$('#foo');
+//or
+jQuery('#foo');
+```
+
+- 但是在 ts 中，编译器并不知道 `$` 或 `jQuery` 是什么东西：
+
+```javascript
+jQuery('#foo');
+// ERROR: Cannot find name 'jQuery'.
+```
+
+- 这时，我们需要使用 `declare var` 来定义它的类型：
+
+```javascript
+declare var jQuery: (selector: string) => any;
+
+jQuery('#foo');
+```
+
+- 上例中，`declare var` 并没有真的定义一个变量，只是定义了全局变量 `jQuery` 的类型，仅仅会用于编译时的检查，在编译结果中会被删除。它编译结果是：
+
+```javascript
+jQuery('#foo');
+```
+
+- 除了 `declare var` 之外，还有其他很多种声明语句，将会在后面详细介绍。
+
+### 2.9.3 什么是声明文件
+
+- 通常我们会把声明语句放到一个单独的文件（`jQuery.d.ts`）种，这就是声明文件：
+
+```javascript
+// src/jQuery.d.ts
+
+declare var jQuery: (selector: string) => any;
+```
+
+```javascript
+// src/index.ts
+
+jQuery('#foo');
+```
+
+- 声明文件必需以 `.d.ts` 为后缀
+
+- 一般来说，ts 会解析项目中所有的 `*.ts` 文件，当然也包含以 `.d.ts` 结尾的文件。所以当我们将 `jQuery.d.ts` 放到项目中时，其他所有 `*.ts` 文件就都可以获得 `jQuery`的类型定义了
+
+```javascript
+/path/to/project
+├── src
+|  ├── index.ts
+|  └── jQuery.d.ts
+└── tsconfig.json
+```
+
+- 假如仍然无法解析，那么可以检查下 `tsconfig.json` 中的 `files`、`include` 和 `exclude` 配置，确保其包含了 `jQuery.d.ts` 文件。
+
+- 这里只演示了全局变量这种模式的声明文件，假如是通过模块导入的方式使用第三方库的话，那么引入声明文件又是另一种方式了，将会在后面详细介绍。
+
+#### 2.9.3.1 第三方声明文件
+
+- 当然，jQuery 的声明文件不需要我们定义了，社区已经帮我们定义好了：jQuery in DefinitelyTyped
+
+- 我们可以直接下载下来使用，但是更推荐的是使用 `@types` 统一管理第三方库的声明文件
+
+`@types` 的使用方式很简单，直接用 npm 安装对应的声明模块即可，以 jQuery 举例：
+
+```javascript
+npm install @types/jquery --save-dev
+```
+
+- 可以在这个页面搜索你需要的声明文件。
+
+### 2.9.4 书写声明文件
+
+- 当一个第三方库没有提供声明文件时，我们就需要自己书写声明文件了。前面只介绍了最简单的声明文件内容，而真正书写一个声明文件并不是一件简单的事，以下会详细介绍如何书写声明文件。
+
+- 在不同的场景下，声明文件的内容和使用方式会有所区别
+  
+- 库的使用场景主要有以下几种：
+  
+  - 全局变量：通过 `<script>` 标签引入第三方库，注入全局变量
+
+  - npm 包：通过 `import foo from 'foo'` 导入，符合 ES6 模块规范
+
+  - UMD 库：既可以通过 `<script>` 标签引入，又可以通过 `import` 导入
+
+  - 直接扩展全局变量：通过 `<script>` 标签引入后，改变一个全局变量的结构
+
+  - 在 npm 包或 UMD 库中扩展全局变量：引用 npm 包或 UMD 库后，改变一个全局变量的结构
+
+  - 模块插件：通过 `<script>` 或 `import` 导入后，改变另一个模块的结构
